@@ -1,0 +1,14 @@
+# Configuration for building U-Boot as 2nd stage
+# bootloader to be flashed as part of boot.img to
+# boot partition on Xiaomi Redmi Note 7 phones.
+
+#include "qcom_sdm660_defconfig"
+
+# Otherwise buildman thinks this isn't an ARM platform
+CONFIG_ARM=y
+
+# lavender is a bit special, it's device tree is upstream
+# and can be built as part of U-Boot build process
+# sdm660_defconfig has CONFIG_OF_OMIT_DTB=y
+CONFIG_OF_OMIT_DTB=n
+CONFIG_DEFAULT_DEVICE_TREE="qcom/sdm660-xiaomi-lavender"

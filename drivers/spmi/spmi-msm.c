@@ -130,6 +130,7 @@ static int msm_spmi_write(struct udevice *dev, int usid, int pid, int off,
 		break;
 
 	case V2:
+	case V3:
 		ch_offset = SPMI_CH_OFFSET(channel);
 
 		reg = pmic_arb_fmt_cmd_v2(SPMI_CMD_EXT_REG_WRITE_LONG, off);
@@ -198,6 +199,7 @@ static int msm_spmi_read(struct udevice *dev, int usid, int pid, int off)
 		break;
 
 	case V2:
+	case V3:
 		ch_offset = SPMI_CH_OFFSET(channel);
 
 		/* Prepare read command */

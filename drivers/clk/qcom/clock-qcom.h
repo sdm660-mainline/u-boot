@@ -12,6 +12,7 @@
 #define CFG_CLK_SRC_CXO   (0 << 8)
 #define CFG_CLK_SRC_GPLL0 (1 << 8)
 #define CFG_CLK_SRC_GPLL0_AUX2 (2 << 8)
+#define CFG_CLK_SRC_GPLL0_EARLY_DIV (2 << 8)
 #define CFG_CLK_SRC_GPLL2 (2 << 8)
 #define CFG_CLK_SRC_GPLL2_MAIN (2 << 8)
 #define CFG_CLK_SRC_GPLL9 (2 << 8)

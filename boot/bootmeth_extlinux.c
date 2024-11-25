@@ -236,6 +236,8 @@ static int extlinux_bootmeth_bind(struct udevice *dev)
 
 	plat->desc = IS_ENABLED(CONFIG_BOOTSTD_FULL) ?
 		"Extlinux boot from a block device" : "extlinux";
+	/* allow to scan any partition, even if those not marked as bootable */
+	/* plat->flags |= BOOTMETHF_ANY_PART; */
 
 	return 0;
 }

@@ -27,7 +27,7 @@ enum {
 	 * have. Note that for disks this limits the partitions numbers that
 	 * are scanned to 1..MAX_BOOTFLOWS_PER_BOOTDEV
 	 */
-	MAX_PART_PER_BOOTDEV	= 30,
+	MAX_PART_PER_BOOTDEV	= 128,
 
 	/* Maximum supported length of the "boot_targets" env string */
 	BOOT_TARGETS_MAX_LEN	= 100,
@@ -169,7 +169,7 @@ int bootdev_find_in_blk(struct udevice *dev, struct udevice *blk,
 
 	/* if there are bootable partitions, scan only those */
 	} else if (iter->first_bootable >= 0 &&
-		   (iter->first_bootable ? !info.bootable : iter->part != 1)) {
+		   (iter->first_bootable ? !info.bootable : false)) {
 		return log_msg_ret("boot", -EINVAL);
 	} else {
 		ret = fs_set_blk_dev_with_part(desc, bflow->part);

@@ -510,6 +510,13 @@ config DEBUG_UART_XTENSA_SEMIHOSTING
 	  start up driver model. The driver will be available until the real
 	  driver model serial is running.
 
+config DEBUG_UART_RAMOOPS
+	bool "Use console-ramoops as debug uart"
+	depends on CONSOLE_RAMOOPS
+	help
+	  Select this option to redirect debug uart output to console
+	  ramoops region.
+
 endchoice
 
 config DEBUG_UART_BASE

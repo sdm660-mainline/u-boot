@@ -112,7 +112,7 @@ void printhex8(unsigned int value);
 void printdec(unsigned int value);
 
 #ifdef CONFIG_DEBUG_UART_ANNOUNCE
-#define _DEBUG_UART_ANNOUNCE	printascii("\n<debug_uart>\n");
+#define _DEBUG_UART_ANNOUNCE	printascii("\n<debug_uart_clover>\n");
 #else
 #define _DEBUG_UART_ANNOUNCE
 #endif

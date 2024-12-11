@@ -8,6 +8,7 @@
  * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  * Marius Groeger <mgroeger@sysgo.de>
  */
+#define DEBUG
 
 #include <config.h>
 #include <api.h>
@@ -68,9 +69,21 @@
 #include <asm-generic/gpio.h>
 #include <relocate.h>
 
+#ifdef DEBUG
+#undef debug
+#define debug(fmt, args...) printf(fmt, ##args)
+#endif
+
 DECLARE_GLOBAL_DATA_PTR;
 
 ulong monitor_flash_len;
+
+int drop_ps_hold(void)
+{
+#define MPM_PS_HOLD 0x010ac000
+	*(uint32_t *)MPM_PS_HOLD = 0x0;
+	return 0; // actually never return, this will reboot our device instantly
+}
 
 __weak int board_flash_wp_on(void)
 {
@@ -772,8 +785,11 @@ static init_fnc_t init_sequence_r[] = {
 	run_main_loop,
 };
 
+#include <debug_uart.h>
+
 void board_init_r(gd_t *new_gd, ulong dest_addr)
 {
+	printascii("board_init_r: start\n");
 	/*
 	 * The pre-relocation drivers may be using memory that has now gone
 	 * away. Mark serial as unavailable - this will fall back to the debug
@@ -782,6 +798,7 @@ void board_init_r(gd_t *new_gd, ulong dest_addr)
 	 * Do the same with log drivers since the memory may not be available.
 	 */
 	gd->flags &= ~(GD_FLG_SERIAL_READY | GD_FLG_LOG_READY);
+	printascii("marked serial & log as not ready\n");
 
 	/*
 	 * Set up the new global data pointer. So far only x86 does this
@@ -796,9 +813,13 @@ void board_init_r(gd_t *new_gd, ulong dest_addr)
 	gd = new_gd;
 #endif
 	gd->flags &= ~GD_FLG_LOG_READY;
+	printascii("board_init_r: will run init_sequence_r\n");
 
-	if (initcall_run_list(init_sequence_r))
+	if (initcall_run_list(init_sequence_r)) {
+		printascii("board_init_r: error in init_sequence_r; will hang\n");
 		hang();
+	}
+	printascii("board_init_r: this should never be printed\n");
 
 	/* NOTREACHED - run_main_loop() does not return */
 	hang();

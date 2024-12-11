@@ -127,6 +127,11 @@ ENTRY(_main)
 	str	x0, [x18, #GD_ENV_ADDR]
 #endif
 #endif
+#if defined(CONFIG_DEBUG_UART) && CONFIG_IS_ENABLED(SERIAL)
+	mov	x0, #0x21	/* '!' */
+	bl	printch
+#endif
+
 	/* Add in link-vs-relocation offset */
 	ldr	x9, [x18, #GD_RELOC_OFF]	/* x9 <- gd->reloc_off */
 	add	lr, lr, x9	/* new return address after relocation */
@@ -134,6 +139,10 @@ ENTRY(_main)
 	b	relocate_code
 
 relocation_return:
+#if defined(CONFIG_DEBUG_UART) && CONFIG_IS_ENABLED(SERIAL)
+	mov	x0, #0x24	/* '$' */
+	bl	printch
+#endif
 
 /*
  * Set up final (full) environment

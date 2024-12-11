@@ -8,6 +8,7 @@
  * Sysgo Real-Time Solutions, GmbH <www.elinos.com>
  * Marius Groeger <mgroeger@sysgo.de>
  */
+#define DEBUG
 
 #include <config.h>
 #include <bloblist.h>
@@ -50,6 +51,11 @@
 #include <dm/root.h>
 #include <linux/errno.h>
 #include <linux/log2.h>
+
+#ifdef DEBUG
+#undef debug
+#define debug(fmt, args...) printf(fmt, ##args)
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -1022,16 +1028,20 @@ static const init_fnc_t init_sequence_f[] = {
 	NULL,
 };
 
+#include <debug_uart.h>
 void board_init_f(ulong boot_flags)
 {
 	struct board_f boardf;
+	printascii("board_init_f: start\n");
 
 	gd->flags = boot_flags;
 	gd->flags &= ~GD_FLG_HAVE_CONSOLE;
 	gd->boardf = &boardf;
 
-	if (initcall_run_list(init_sequence_f))
+	if (initcall_run_list(init_sequence_f)) {
+		printascii("board_init_f: error during init_sequence_f\n");
 		hang();
+	}
 
 #if !defined(CONFIG_ARM) && !defined(CONFIG_SANDBOX) && \
 		!defined(CONFIG_EFI_APP) && !CONFIG_IS_ENABLED(X86_64) && \
@@ -1039,6 +1049,7 @@ void board_init_f(ulong boot_flags)
 	/* NOTREACHED - jump_to_copy() does not return */
 	hang();
 #endif
+	printascii("board_init_f: end OK\n");
 }
 
 #if defined(CONFIG_X86) || defined(CONFIG_ARC)

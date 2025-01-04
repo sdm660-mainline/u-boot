@@ -169,23 +169,20 @@ static struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t 
 
 	if (prz->buffer->sig == sig) {
 		if (prz->buffer->size > prz->buffer_size ||
-		    prz->buffer->start > prz->buffer->size)
-			log_info("found existing invalid buffer, size %ul, start %ul\n",
+		    prz->buffer->start > prz->buffer->size) {
+			log_info("resetting existing invalid buffer: size %u, start %u\n",
 				prz->buffer->size, prz->buffer->start);
-		else {
-			log_info("found existing buffer, size %ul, start %ul\n",
+			persistent_ram_zap(prz);
+		} else {
+			log_info("reusing existing buffer: size %u, start %u\n",
 				 prz->buffer->size, prz->buffer->start);
-			/* we could be saving old data somewhere, but we have no use for it */
-			return 0;
 		}
 	} else {
-		pr_debug("no valid data in buffer (sig = 0x%08x)\n",
-			 prz->buffer->sig);
+		log_warning("resetting invalid buffer (sig = 0x%08x)\n", prz->buffer->sig);
+		/* Reset missing or invalid memory area. */
+		prz->buffer->sig = sig;
+		persistent_ram_zap(prz);
 	}
-
-	/* Rewind missing or invalid memory area. */
-	prz->buffer->sig = sig;
-	persistent_ram_zap(prz);
 
 	return prz;
 err:
@@ -285,6 +282,7 @@ static int ramoops_init_dump_zones(struct console_ramoops_data *cxt, phys_addr_t
 	cxt->max_dump_cnt = dump_mem_sz / cxt->record_size;
 	if (!cxt->max_dump_cnt)
 		return -ENOMEM;
+
 	cxt->dump_write_cnt = 0;
 
 	cxt->przs = calloc(sizeof(struct persistent_ram_zone *), cxt->max_dump_cnt);

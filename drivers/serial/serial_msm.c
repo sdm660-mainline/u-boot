@@ -231,7 +231,7 @@ static int calc_csr_bitrate(struct msm_serial_data *priv)
 	return -EINVAL;
 }
 
-static void uart_dm_init(struct msm_serial_data *priv)
+static void __maybe_unused uart_dm_init(struct msm_serial_data *priv)
 {
 	/* Delay initialization for a bit to let pins stabilize if necessary */
 	mdelay(5);

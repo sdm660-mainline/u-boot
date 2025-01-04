@@ -156,8 +156,9 @@ void qcom_of_fixup_nodes(void)
 	time_call(fixup_power_domains);
 }
 
-int ft_board_setup(void *blob, struct bd_info __maybe_unused *bd)
+int ft_board_setup(void __maybe_unused *blob, struct bd_info __maybe_unused *bd)
 {
+#if 0
 	struct fdt_header *fdt = blob;
 	int node;
 
@@ -170,6 +171,7 @@ int ft_board_setup(void *blob, struct bd_info __maybe_unused *bd)
 		fdt_setprop_string(fdt, node, "dr_mode", "otg");
 		break;
 	}
+#endif
 
 	return 0;
 }

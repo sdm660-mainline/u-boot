@@ -131,7 +131,7 @@ static void qcom_parse_memory(void)
 
 	gd->ram_base = prevbl_ddr_banks[0].start;
 	gd->ram_size = ram_end - gd->ram_base;
-	debug("ram_base = %#011lx, ram_size = %#011llx, ram_end = %#011llx\n",
+	log_info("ram_base = %#011lx, ram_size = %#011llx, ram_end = %#011llx\n",
 	      gd->ram_base, gd->ram_size, ram_end);
 }
 
@@ -167,12 +167,15 @@ int board_fdt_blob_setup(void **fdtp)
 	if (!internal_valid && !external_valid)
 		panic("Internal FDT is invalid and no external FDT was provided! (fdt=%#llx)\n",
 		      (phys_addr_t)fdt);
+	
+	log_info("internal_valid = %d\n", internal_valid);
+	log_info("external_valid = %d\n", external_valid);
 
 	if (internal_valid) {
-		debug("Using built in FDT\n");
+		log_info("Using built in FDT\n");
 		ret = -EEXIST;
 	} else {
-		debug("Using external FDT\n");
+		log_info("Using external FDT\n");
 		/* So we can use it before returning */
 		*fdtp = fdt;
 	}

@@ -535,14 +535,21 @@ U_BOOT_DRIVER(console_ramoops) = {
 #ifdef CONFIG_DEBUG_UART_RAMOOPS
 #include <debug_uart.h>
 
-/* values from xiaomi-clover downstream TWRP device tree */
-/* TODO: these should be Kconfig options */
-#define RAMOOPS_BASE 0x9fe00000
-#define RAMOOPS_SIZE 0x100000
-#define CONSOLE_SIZE 0x80000
-#define FTRACE_SIZE  0x1000
-#define RECORD_SIZE  0x1000
-#define PMSG_SIZE    0x8000
+/* Some sanity checks */
+#if (CONFIG_DEBUG_UART_RAMOOPS_BASE == 0x0) || (CONFIG_DEBUG_UART_RAMOOPS_SIZE == 0x0)
+#error "Base & size of ramoops region have to be defined in config! (DEBUG_UART_RAMOOPS_BASE DEBUG_UART_RAMOOPS_SIZE)"
+#endif
+#if CONFIG_DEBUG_UART_RAMOOPS_CONSOLE_SIZE == 0x0
+#error "DEBUG_UART_RAMOOPS is useless without console region!"
+#endif
+
+/* These come from .config now */
+#define RAMOOPS_BASE CONFIG_DEBUG_UART_RAMOOPS_BASE
+#define RAMOOPS_SIZE CONFIG_DEBUG_UART_RAMOOPS_SIZE
+#define CONSOLE_SIZE CONFIG_DEBUG_UART_RAMOOPS_CONSOLE_SIZE
+#define FTRACE_SIZE  CONFIG_DEBUG_UART_RAMOOPS_FTRACE_SIZE
+#define RECORD_SIZE  CONFIG_DEBUG_UART_RAMOOPS_RECORD_SIZE
+#define PMSG_SIZE    CONFIG_DEBUG_UART_RAMOOPS_PMSG_SIZE
 
 /* The size of the region reserved for panic/oops dumps */
 #define DUMPS_SIZE    (RAMOOPS_SIZE - CONSOLE_SIZE - FTRACE_SIZE - PMSG_SIZE)

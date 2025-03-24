@@ -68,8 +68,8 @@
 		regulator-max-microvolt = <3300000>;
 		gpio = <&pm660l_gpios 5 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-		pinctrl-names = "default";
 		pinctrl-0 = <&lcd_pwr_en_default>;
+		pinctrl-names = "default";
 	};
 
 	vph_pwr: vph-pwr-regulator {
@@ -82,6 +82,9 @@
 
 	gpio-keys {
 		compatible = "gpio-keys";
+
+		pinctrl-0 = <&vol_up_default>;
+		pinctrl-names = "default";
 
 		key-volup {
 			label = "Volume Up";
@@ -208,6 +211,14 @@
 		pins = "gpio5";
 		function = PMIC_GPIO_FUNC_NORMAL;
 		bias-disable;
+	};
+
+	vol_up_default: vol-up-default-state {
+		pins = "gpio7";
+		function = PMIC_GPIO_FUNC_NORMAL;
+		bias-pull-up;
+		input-enable;
+		qcom,drive-strength = <PMIC_GPIO_STRENGTH_NO>;
 	};
 };
 

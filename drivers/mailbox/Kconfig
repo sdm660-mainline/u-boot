@@ -35,6 +35,14 @@ config MPFS_MBOX
 	  Enable support for the mailboxes that provide a communication
 	  channel with the system controller integrated on PolarFire SoC.
 
+config QCOM_APCS_IPC
+	bool "Qualcomm APCS IPC driver"
+	depends on DM_MAILBOX && ARCH_SNAPDRAGON
+	help
+	  Say y here to enable support for the APCS IPC mailbox driver,
+	  providing an interface for invoking the inter-process communication
+	  signals from the application processor to other remote processors.
+
 config SANDBOX_MBOX
 	bool "Enable the sandbox mailbox test driver"
 	depends on DM_MAILBOX && SANDBOX

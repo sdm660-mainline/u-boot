@@ -72,7 +72,7 @@
 		};
 
 		key-vol-down {
-			label = "vol_down";
+			label = "Volume Down";
 			gpios = <&tlmm 43 GPIO_ACTIVE_LOW>;
 			linux,input-type = <1>;
 			linux,code = <KEY_VOLUMEDOWN>;

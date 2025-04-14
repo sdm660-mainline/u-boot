@@ -207,11 +207,9 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 			clk_enable_gpll0(priv->base, &gpll4_clk);
 			break;
 		case CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2:
-			/*
-			 * No need to enable gpll0_early_div, it is modeled as fixed clock,
-			 *    with rate of gpll0 divided by 2.
-			 */
+			/* Just make sure that GPLL0 (parent) is up */
 			debug("using GPLL0_EARLY_DIV as src for SDCC2_APPS_CLK\n");
+			clk_enable_gpll0(priv->base, &gpll0_clk);
 			break;
 		}
 		clk_rcg_set_rate_mnd(priv->base, GCC_SDCC2_APPS_CLK_CMD_RCGR,
@@ -219,7 +217,7 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 				     ftbl_entry->src, 8);
 		return ftbl_entry->freq;
 	case GCC_SDCC1_APPS_CLK:
-		/* The firmware turns this on for us and always sets it to this rate */
+		/* The firmware turns this on and sets it to 384 MHz, sourced from GPLL4 */
 		return 384000000;
 	case GCC_USB30_MASTER_CLK:
 		ftbl_entry = qcom_find_freq(ftbl_usb30_master_clk_src, rate);

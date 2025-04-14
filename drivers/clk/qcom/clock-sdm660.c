@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Clock drivers for Qualcomm sdm630/660
+ * Global Clock Controller driver for Qualcomm SDM630/636/660
  */
 
 #include <clk-uclass.h>
@@ -13,9 +13,59 @@
 
 #include "clock-qcom.h"
 
-#define GCC_BLSP1_UART2_APPS_CLK_CMD_RCGR 0x1c00c
-#define SDCC1_APPS_CLK_CMD_RCGR 0x1602c
-#define SDCC2_APPS_CLK_CMD_RCGR 0x14010
+#define GCC_BASE				0x00100000
+
+#define GCC_CFG_NOC_USB3_AXI_CBCR		0x5018
+#define GCC_USB30_MASTER_CBCR			0xf008
+#define GCC_USB30_SLEEP_CBCR			0xf00c
+#define GCC_USB30_MOCK_UTMI_CBCR		0xf010
+#define GCC_USB30_MASTER_CMD_RCGR		0xf014
+#define GCC_AGGRE2_USB3_AXI_CBCR		0xf03c
+#define GCC_USB_PHY_CFG_AHB2PHY_CBCR		0x6a004
+#define GCC_SDCC1_APPS_CBCR			0x16004
+#define GCC_SDCC1_AHB_CBCR			0x16008
+#define GCC_SDCC1_ICE_CORE_CBCR			0x1600c
+#define GCC_SDCC1_APPS_CLK_CMD_RCGR		0x1602c
+#define GCC_SDCC2_APPS_CBCR			0x14004
+#define GCC_SDCC2_AHB_CBCR			0x14008
+#define GCC_SDCC2_APPS_CLK_CMD_RCGR		0x14010
+#define GCC_BLSP1_AHB_CBCR			0x17004
+#define GCC_BLSP1_UART2_APPS_CBCR		0x1c004
+#define GCC_BLSP1_UART2_APPS_CLK_CMD_RCGR	0x1c00c
+#define GCC_USB3_PHY_AUX_CBCR			0x50000
+#define GCC_USB3_PHY_PIPE_CBCR			0x50004
+#define GCC_USB3_PHY_AUX_CMD_RCGR		0x5000c
+
+/* vote clocks */
+#define GCC_APCS_GPLL_ENA_VOTE			0x52000
+#define   GPLL6_ENA_BIT 			BIT(6)
+#define   GPLL5_ENA_BIT				BIT(5)
+#define   GPLL4_ENA_BIT				BIT(4)
+#define   GPLL3_ENA_BIT				BIT(3)
+#define   GPLL2_ENA_BIT				BIT(2)
+#define   GPLL1_ENA_BIT				BIT(1)
+#define   GPLL0_ENA_BIT				BIT(0)
+#define GCC_APCS_CLOCK_BRANCH_ENA_VOTE		0x52004
+#define   BLSP1_AHB_CLK_ENA_BIT			BIT(17)
+#define   BLSP1_SLEEP_CLK_ENA_BIT		BIT(16)
+#define GCC_USB3_CLKREF_EN			0x8800c
+#define   USB3_ENABLE_BIT			BIT(0)
+#define GCC_RX1_USB2_CLKREF_EN			0x88014
+#define   RX1_USB2_ENABLE_BIT			BIT(0)
+#define GCC_RX0_USB2_CLKREF_EN			0x88018
+#define   RX0_USB2_ENABLE_BIT			BIT(0)
+
+/* GPLL mode regs - offset relative to GCC base */
+#define GCC_GPLL0_MODE				0x0
+#define GCC_GPLL1_MODE				0x1000
+#define GCC_GPLL2_MODE				0x2000
+#define GCC_GPLL3_MODE				0x3000
+#define GCC_GPLL4_MODE				0x77000
+#define GCC_GPLL5_MODE				0x74000
+/*
+ * Linux seems to only use GPLLs 0, 1 and 4. Though, if U-Boot is
+ * chainloaded, almost every GPLL0-GPLL5 is already enabled, except GPLL3.
+ */
 
 /* blsp1_uart{1,2}_apps_clk_src share the same frequency table */
 static const struct freq_tbl ftbl_blsp1_uart1_apps_clk_src[] = {
@@ -38,11 +88,24 @@ static const struct freq_tbl ftbl_blsp1_uart1_apps_clk_src[] = {
 };
 
 /*
- * In Linux's parent_map for this clock ( gcc_parent_map_xo_gpll0_gpll0_early_div_gpll4 ):
- * { P_GPLL0_EARLY_DIV, 2 }
- */
-#define CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2 (2 << 8)
+Cut down clk tree from Linux:
+gpll0                          600000000
+   sdcc2_apps_clk_src          100000000
+      gcc_sdcc2_apps_clk       100000000   c084000.mmc (core)
+   blsp1_uart2_apps_clk_src    3686400
+      gcc_blsp1_uart2_apps_clk 3686400     c170000.serial (core)
+*/
 
+/*
+ * In Linux's parent_map for this clock:
+static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div_gpll4[] = {
+	{ P_XO, 0 },
+	{ P_GPLL0, 1 },
+	{ P_GPLL0_EARLY_DIV, 2 },
+	{ P_GPLL4, 5 },
+};
+*/
+#define CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2 (2 << 8)
 static const struct freq_tbl ftbl_sdcc2_apps_clk_src[] = {
 	F(144000, CFG_CLK_SRC_CXO, 16, 3, 25),
 	F(400000, CFG_CLK_SRC_CXO, 12, 1, 4),
@@ -55,20 +118,64 @@ static const struct freq_tbl ftbl_sdcc2_apps_clk_src[] = {
 	{ }
 };
 
+/*
+static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div[] = {
+	{ P_XO, 0 },
+	{ P_GPLL0, 1 },
+	{ P_GPLL0_EARLY_DIV, 6 },
+};
+*/
+#define CFG_CLK_SRC_GPLL0_EARLY_DIV_USB30_MASTER (6 << 8)
+static const struct freq_tbl ftbl_usb30_master_clk_src[] = {
+	F(19200000, CFG_CLK_SRC_CXO, 1, 0, 0),
+	F(66666667, CFG_CLK_SRC_GPLL0_EARLY_DIV_USB30_MASTER, 4.5, 0, 0),
+	F(120000000, CFG_CLK_SRC_GPLL0, 5, 0, 0),
+	F(133333333, CFG_CLK_SRC_GPLL0, 4.5, 0, 0),
+	F(150000000, CFG_CLK_SRC_GPLL0, 4, 0, 0),
+	F(200000000, CFG_CLK_SRC_GPLL0, 3, 0, 0),
+	F(240000000, CFG_CLK_SRC_GPLL0, 2.5, 0, 0),
+	{ }
+};
+
+static const struct freq_tbl ftbl_usb3_phy_aux_clk_src[] = {
+	F(1200000, CFG_CLK_SRC_CXO, 16, 0, 0),
+	F(19200000, CFG_CLK_SRC_CXO, 1, 0, 0),
+	{ }
+};
+
 static const struct pll_vote_clk gpll0_clk = {
-	.status = 0,
+	.status = GCC_GPLL0_MODE,
 	.status_bit = BIT(31),
-	.ena_vote = 0x52000,
-	.vote_bit = BIT(0),
+	.ena_vote = GCC_APCS_GPLL_ENA_VOTE,
+	.vote_bit = GPLL0_ENA_BIT,
+};
+
+static const struct pll_vote_clk gpll4_clk = {
+	.status = GCC_GPLL4_MODE,
+	.status_bit = BIT(31),
+	.ena_vote = GCC_APCS_GPLL_ENA_VOTE,
+	.vote_bit = GPLL4_ENA_BIT,
 };
 
 static const struct gate_clk sdm660_clks[] = {
-	GATE_CLK(GCC_BLSP1_AHB_CLK, 0x52004, BIT(17)),
-	GATE_CLK(GCC_SDCC1_AHB_CLK, 0x16008, BIT(0)),
-	GATE_CLK(GCC_SDCC1_APPS_CLK, 0x16004, BIT(0)),
-	GATE_CLK(GCC_SDCC1_ICE_CORE_CLK, 0x1600c, BIT(0)),
-	GATE_CLK(GCC_SDCC2_AHB_CLK, 0x14008, BIT(0)),
-	GATE_CLK(GCC_SDCC2_APPS_CLK, 0x14004, BIT(0)),
+	GATE_CLK(GCC_AGGRE2_USB3_AXI_CLK, GCC_AGGRE2_USB3_AXI_CBCR, BIT(0)),
+	GATE_CLK(GCC_BLSP1_AHB_CLK, GCC_APCS_CLOCK_BRANCH_ENA_VOTE, BLSP1_AHB_CLK_ENA_BIT),
+	GATE_CLK(GCC_BLSP1_UART2_APPS_CLK, GCC_BLSP1_UART2_APPS_CBCR, BIT(0)),
+	GATE_CLK(GCC_CFG_NOC_USB3_AXI_CLK, GCC_CFG_NOC_USB3_AXI_CBCR, BIT(0)),
+	GATE_CLK(GCC_SDCC1_AHB_CLK, GCC_SDCC1_AHB_CBCR, BIT(0)),
+	GATE_CLK(GCC_SDCC1_APPS_CLK, GCC_SDCC1_APPS_CBCR, BIT(0)),
+	GATE_CLK(GCC_SDCC1_ICE_CORE_CLK, GCC_SDCC1_ICE_CORE_CBCR, BIT(0)),
+	GATE_CLK(GCC_SDCC2_AHB_CLK, GCC_SDCC2_AHB_CBCR, BIT(0)),
+	GATE_CLK(GCC_SDCC2_APPS_CLK, GCC_SDCC2_APPS_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB30_MASTER_CLK, GCC_USB30_MASTER_CBCR, BIT(0)), // 91
+	GATE_CLK(GCC_USB30_MOCK_UTMI_CLK, GCC_USB30_MOCK_UTMI_CBCR, BIT(0)), // 92
+	GATE_CLK(GCC_USB30_SLEEP_CLK, GCC_USB30_SLEEP_CBCR, BIT(0)), // 93
+	GATE_CLK(GCC_USB3_CLKREF_CLK, GCC_USB3_CLKREF_EN, USB3_ENABLE_BIT), // 94
+	GATE_CLK(GCC_USB3_PHY_AUX_CLK, GCC_USB3_PHY_AUX_CBCR, BIT(0)), // 95
+	GATE_CLK(GCC_USB3_PHY_PIPE_CLK, GCC_USB3_PHY_PIPE_CBCR, BIT(0)), // 96
+	GATE_CLK(GCC_USB_PHY_CFG_AHB2PHY_CLK, GCC_USB_PHY_CFG_AHB2PHY_CBCR, BIT(0)), // 97
+	GATE_CLK(GCC_RX0_USB2_CLKREF_CLK, GCC_RX0_USB2_CLKREF_EN, RX0_USB2_ENABLE_BIT), // 129
+	GATE_CLK(GCC_RX1_USB2_CLKREF_CLK, GCC_RX1_USB2_CLKREF_EN, RX1_USB2_ENABLE_BIT), // 130
 };
 
 static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
@@ -91,25 +198,43 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 		switch (ftbl_entry->src) {
 		case CFG_CLK_SRC_GPLL0:
 			/* enable gpll0 */
+			debug("using GPLL0 as src for SDCC2_APPS_CLK\n");
 			clk_enable_gpll0(priv->base, &gpll0_clk);
 			break;
 		case CFG_CLK_SRC_GPLL4:
 			/* enable gpll4 */
-			debug("can't use GPLL4 as src for SDCC2_APPS_CLK, req rate: %lu", rate);
+			debug("using GPLL4 as src for SDCC2_APPS_CLK\n");
+			clk_enable_gpll0(priv->base, &gpll4_clk);
 			break;
 		case CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2:
-			/* enable gpll0_early */
-			debug("can't use GPLL0_EARLY as src for SDCC2_APPS_CLK, req rate: %lu",
-			      rate);
+			/*
+			 * No need to enable gpll0_early_div, it is modeled as fixed clock,
+			 *    with rate of gpll0 divided by 2.
+			 */
+			debug("using GPLL0_EARLY_DIV as src for SDCC2_APPS_CLK\n");
 			break;
 		}
-		clk_rcg_set_rate_mnd(priv->base, SDCC2_APPS_CLK_CMD_RCGR,
+		clk_rcg_set_rate_mnd(priv->base, GCC_SDCC2_APPS_CLK_CMD_RCGR,
 				     ftbl_entry->pre_div, ftbl_entry->m, ftbl_entry->n,
 				     ftbl_entry->src, 8);
 		return ftbl_entry->freq;
 	case GCC_SDCC1_APPS_CLK:
 		/* The firmware turns this on for us and always sets it to this rate */
 		return 384000000;
+	case GCC_USB30_MASTER_CLK:
+		ftbl_entry = qcom_find_freq(ftbl_usb30_master_clk_src, rate);
+		clk_rcg_set_rate_mnd(priv->base, GCC_USB30_MASTER_CMD_RCGR,
+			ftbl_entry->pre_div, ftbl_entry->m, ftbl_entry->n,
+			ftbl_entry->src, 8);
+		return ftbl_entry->freq;
+	case GCC_USB30_MOCK_UTMI_CLK:
+		return rate;
+	case GCC_USB3_PHY_AUX_CLK:
+		ftbl_entry = qcom_find_freq(ftbl_usb3_phy_aux_clk_src, rate);
+		clk_rcg_set_rate_mnd(priv->base, GCC_USB3_PHY_AUX_CMD_RCGR,
+			ftbl_entry->pre_div, ftbl_entry->m, ftbl_entry->n,
+			ftbl_entry->src, 8);
+		return ftbl_entry->freq;
 	default:
 		debug("clock-sdm660: set_rate for some unknown clock %lu\n", clk->id);
 		return rate;
@@ -134,6 +259,13 @@ static int sdm660_gcc_enable(struct clk *clk)
 static const struct qcom_reset_map sdm660_gcc_resets[] = {
 	[GCC_QUSB2PHY_PRIM_BCR] = { 0x12000 },
 	[GCC_QUSB2PHY_SEC_BCR] = { 0x12004 },
+	[GCC_UFS_BCR] = { 0x75000 },
+	[GCC_USB3_DP_PHY_BCR] = { 0x50028 },
+	[GCC_USB3_PHY_BCR] = { 0x50020 },
+	[GCC_USB3PHY_PHY_BCR] = { 0x50024 },
+	[GCC_USB_20_BCR] = { 0x2f000 },
+	[GCC_USB_30_BCR] = { 0xf000 },
+	[GCC_USB_PHY_CFG_AHB2PHY_BCR] = { 0x6a000 },
 	/*
 	 * Linux dt-bindings (and sdm630 dtsi) don't have the defines for
 	 * (or uses of) GCC_SDCCn_BCR resets, so this won't compile,
@@ -141,14 +273,32 @@ static const struct qcom_reset_map sdm660_gcc_resets[] = {
 	 */
 	/* [GCC_SDCC1_BCR] = { 0x16000 }, */
 	/* [GCC_SDCC2_BCR] = { 0x14000 }, */
-	[GCC_USB_20_BCR] = { 0x2f000 },
-	[GCC_USB_30_BCR] = { 0xf000 },
-	[GCC_USB3_PHY_BCR] = { 0x50020 },
-	[GCC_USB3PHY_PHY_BCR] = { 0x50024 },
 };
 
 static const struct qcom_power_map sdm660_gdscs[] = {
 	[USB_30_GDSC] = { .reg = 0xf004, .flags = VOTABLE },
+};
+
+static const phys_addr_t __maybe_unused sdm660_gpll_addrs[] = {
+	GCC_BASE + GCC_GPLL0_MODE, GCC_BASE + GCC_GPLL1_MODE,
+	GCC_BASE + GCC_GPLL2_MODE, GCC_BASE + GCC_GPLL3_MODE,
+	GCC_BASE + GCC_GPLL4_MODE, GCC_BASE + GCC_GPLL5_MODE,
+};
+
+static const phys_addr_t sdm660_rcg_addrs[] = {
+	GCC_BASE + GCC_USB30_MASTER_CMD_RCGR,
+	GCC_BASE + GCC_USB3_PHY_AUX_CMD_RCGR,
+	GCC_BASE + GCC_SDCC1_APPS_CLK_CMD_RCGR,
+	GCC_BASE + GCC_SDCC2_APPS_CLK_CMD_RCGR,
+	GCC_BASE + GCC_BLSP1_UART2_APPS_CLK_CMD_RCGR,
+};
+
+static const char *const sdm660_rcg_names[] = {
+	"GCC_USB30_MASTER_CLK",
+	"GCC_USB3_PHY_AUX_CLK",
+	"GCC_SDCC1_APPS_CLK",
+	"GCC_SDCC2_APPS_CLK",
+	"GCC_BLSP1_UART2_APPS_CLK",
 };
 
 static struct msm_clk_data sdm660_gcc_data = {
@@ -161,6 +311,14 @@ static struct msm_clk_data sdm660_gcc_data = {
 
 	.enable = sdm660_gcc_enable,
 	.set_rate = sdm660_gcc_set_rate,
+
+	/* some data for debugging, `clk dump` command */
+	//.dbg_pll_addrs = sdm660_gpll_addrs,
+	//.num_plls = ARRAY_SIZE(sdm660_gpll_addrs),
+	/* Sadly, dump_gplls() in clock-qcom.c is not suitable for our PLL type. */
+	.dbg_rcg_addrs = sdm660_rcg_addrs,
+	.dbg_rcg_names = sdm660_rcg_names,
+	.num_rcgs = ARRAY_SIZE(sdm660_rcg_addrs),
 };
 
 static const struct udevice_id gcc_sdm660_of_match[] = {

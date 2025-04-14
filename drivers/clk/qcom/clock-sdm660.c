@@ -88,15 +88,6 @@ static const struct freq_tbl ftbl_blsp1_uart1_apps_clk_src[] = {
 };
 
 /*
-Cut down clk tree from Linux:
-gpll0                          600000000
-   sdcc2_apps_clk_src          100000000
-      gcc_sdcc2_apps_clk       100000000   c084000.mmc (core)
-   blsp1_uart2_apps_clk_src    3686400
-      gcc_blsp1_uart2_apps_clk 3686400     c170000.serial (core)
-*/
-
-/*
  * In Linux's parent_map for this clock:
 static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div_gpll4[] = {
 	{ P_XO, 0 },
@@ -106,6 +97,7 @@ static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div_gpll4[] =
 };
 */
 #define CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2 (2 << 8)
+
 static const struct freq_tbl ftbl_sdcc2_apps_clk_src[] = {
 	F(144000, CFG_CLK_SRC_CXO, 16, 3, 25),
 	F(400000, CFG_CLK_SRC_CXO, 12, 1, 4),
@@ -118,7 +110,7 @@ static const struct freq_tbl ftbl_sdcc2_apps_clk_src[] = {
 	{ }
 };
 
-/*
+/* In Linux's parent_map for this clock:
 static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div[] = {
 	{ P_XO, 0 },
 	{ P_GPLL0, 1 },
@@ -126,6 +118,7 @@ static const struct parent_map gcc_parent_map_xo_gpll0_gpll0_early_div[] = {
 };
 */
 #define CFG_CLK_SRC_GPLL0_EARLY_DIV_USB30_MASTER (6 << 8)
+
 static const struct freq_tbl ftbl_usb30_master_clk_src[] = {
 	F(19200000, CFG_CLK_SRC_CXO, 1, 0, 0),
 	F(66666667, CFG_CLK_SRC_GPLL0_EARLY_DIV_USB30_MASTER, 4.5, 0, 0),
@@ -167,15 +160,15 @@ static const struct gate_clk sdm660_clks[] = {
 	GATE_CLK(GCC_SDCC1_ICE_CORE_CLK, GCC_SDCC1_ICE_CORE_CBCR, BIT(0)),
 	GATE_CLK(GCC_SDCC2_AHB_CLK, GCC_SDCC2_AHB_CBCR, BIT(0)),
 	GATE_CLK(GCC_SDCC2_APPS_CLK, GCC_SDCC2_APPS_CBCR, BIT(0)),
-	GATE_CLK(GCC_USB30_MASTER_CLK, GCC_USB30_MASTER_CBCR, BIT(0)), // 91
-	GATE_CLK(GCC_USB30_MOCK_UTMI_CLK, GCC_USB30_MOCK_UTMI_CBCR, BIT(0)), // 92
-	GATE_CLK(GCC_USB30_SLEEP_CLK, GCC_USB30_SLEEP_CBCR, BIT(0)), // 93
-	GATE_CLK(GCC_USB3_CLKREF_CLK, GCC_USB3_CLKREF_EN, USB3_ENABLE_BIT), // 94
-	GATE_CLK(GCC_USB3_PHY_AUX_CLK, GCC_USB3_PHY_AUX_CBCR, BIT(0)), // 95
-	GATE_CLK(GCC_USB3_PHY_PIPE_CLK, GCC_USB3_PHY_PIPE_CBCR, BIT(0)), // 96
-	GATE_CLK(GCC_USB_PHY_CFG_AHB2PHY_CLK, GCC_USB_PHY_CFG_AHB2PHY_CBCR, BIT(0)), // 97
-	GATE_CLK(GCC_RX0_USB2_CLKREF_CLK, GCC_RX0_USB2_CLKREF_EN, RX0_USB2_ENABLE_BIT), // 129
-	GATE_CLK(GCC_RX1_USB2_CLKREF_CLK, GCC_RX1_USB2_CLKREF_EN, RX1_USB2_ENABLE_BIT), // 130
+	GATE_CLK(GCC_USB30_MASTER_CLK, GCC_USB30_MASTER_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB30_MOCK_UTMI_CLK, GCC_USB30_MOCK_UTMI_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB30_SLEEP_CLK, GCC_USB30_SLEEP_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB3_CLKREF_CLK, GCC_USB3_CLKREF_EN, USB3_ENABLE_BIT),
+	GATE_CLK(GCC_USB3_PHY_AUX_CLK, GCC_USB3_PHY_AUX_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB3_PHY_PIPE_CLK, GCC_USB3_PHY_PIPE_CBCR, BIT(0)),
+	GATE_CLK(GCC_USB_PHY_CFG_AHB2PHY_CLK, GCC_USB_PHY_CFG_AHB2PHY_CBCR, BIT(0)),
+	GATE_CLK(GCC_RX0_USB2_CLKREF_CLK, GCC_RX0_USB2_CLKREF_EN, RX0_USB2_ENABLE_BIT),
+	GATE_CLK(GCC_RX1_USB2_CLKREF_CLK, GCC_RX1_USB2_CLKREF_EN, RX1_USB2_ENABLE_BIT),
 };
 
 static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
@@ -197,19 +190,11 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 		/* we probably should enable source PLL for the selected frequency */
 		switch (ftbl_entry->src) {
 		case CFG_CLK_SRC_GPLL0:
-			/* enable gpll0 */
-			debug("using GPLL0 as src for SDCC2_APPS_CLK\n");
+		case CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2:
 			clk_enable_gpll0(priv->base, &gpll0_clk);
 			break;
 		case CFG_CLK_SRC_GPLL4:
-			/* enable gpll4 */
-			debug("using GPLL4 as src for SDCC2_APPS_CLK\n");
 			clk_enable_gpll0(priv->base, &gpll4_clk);
-			break;
-		case CFG_CLK_SRC_GPLL0_EARLY_DIV_SDCC2:
-			/* Just make sure that GPLL0 (parent) is up */
-			debug("using GPLL0_EARLY_DIV as src for SDCC2_APPS_CLK\n");
-			clk_enable_gpll0(priv->base, &gpll0_clk);
 			break;
 		}
 		clk_rcg_set_rate_mnd(priv->base, GCC_SDCC2_APPS_CLK_CMD_RCGR,
@@ -234,8 +219,8 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 			ftbl_entry->src, 8);
 		return ftbl_entry->freq;
 	default:
-		debug("clock-sdm660: set_rate for some unknown clock %lu\n", clk->id);
-		return rate;
+		debug("clock-sdm660: can't set rate for unknown clock ID %lu\n", clk->id);
+		return 0;
 	}
 }
 
@@ -249,9 +234,8 @@ static int sdm660_gcc_enable(struct clk *clk)
 	}
 
 	debug("enable clk %s\n", sdm660_clks[clk->id].name);
-	qcom_gate_clk_en(priv, clk->id);
 
-	return 0;
+	return qcom_gate_clk_en(priv, clk->id);
 }
 
 static const struct qcom_reset_map sdm660_gcc_resets[] = {

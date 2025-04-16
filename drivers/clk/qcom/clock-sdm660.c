@@ -248,13 +248,8 @@ static const struct qcom_reset_map sdm660_gcc_resets[] = {
 	[GCC_USB_20_BCR] = { 0x2f000 },
 	[GCC_USB_30_BCR] = { 0xf000 },
 	[GCC_USB_PHY_CFG_AHB2PHY_BCR] = { 0x6a000 },
-	/*
-	 * Linux dt-bindings (and sdm630 dtsi) don't have the defines for
-	 * (or uses of) GCC_SDCCn_BCR resets, so this won't compile,
-	 * but the hardware exists and their offsets are:
-	 */
-	/* [GCC_SDCC1_BCR] = { 0x16000 }, */
-	/* [GCC_SDCC2_BCR] = { 0x14000 }, */
+	[GCC_SDCC1_BCR] = { 0x16000 },
+	[GCC_SDCC2_BCR] = { 0x14000 },
 };
 
 static const struct qcom_power_map sdm660_gdscs[] = {

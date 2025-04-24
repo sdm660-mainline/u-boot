@@ -300,6 +300,9 @@ static struct msm_clk_data sdm660_gcc_data = {
 
 static const struct udevice_id gcc_sdm660_of_match[] = {
 	{
+		.compatible = "qcom,gcc-sdm630",
+		.data = (ulong)&sdm660_gcc_data,
+	}, {
 		.compatible = "qcom,gcc-sdm660",
 		.data = (ulong)&sdm660_gcc_data,
 	},

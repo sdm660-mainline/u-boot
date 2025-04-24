@@ -1,0 +1,38 @@
+# Configuration for building U-Boot as 2nd stage
+# bootloader to be flashed as part of boot.img to
+# boot partition on Sony Xperia XA2 phones.
+
+#include "qcom_sdm660_defconfig"
+
+# sony-nile platform device trees are upstream
+CONFIG_OF_UPSTREAM=y
+CONFIG_DEFAULT_DEVICE_TREE="qcom/sdm630-sony-xperia-nile-pioneer"
+
+# Sony logo is black on white background. Very annoying.
+# Clear framebuffer.
+CONFIG_NO_FB_CLEAR=n
+
+# This is built with no real serial debug uart available,
+# it is using ramoops logging instead
+
+# CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+# CONFIG_SERIAL_PRESENT is not set
+# ^^ reason to disable both debug-uart and bluetooth-uart nodes in dts
+
+# Values from pioneer downstream /sys/module/ramoops/parameters/
+# NOTE: Doesn't match what's in mainline Linux dts.
+#       Linux won't be able to read our logs.
+# console_size	262144		0x40000
+# ftrace_size	0		0x0
+# mem_address	4290772992	0xffc00000
+# mem_size	1048576		0x100000
+# pmsg_size	0		0x0
+# record_size	4096		0x1000
+CONFIG_DEBUG_UART_RAMOOPS=y
+CONFIG_DEBUG_UART_RAMOOPS_BASE=0xffc00000
+CONFIG_DEBUG_UART_RAMOOPS_SIZE=0x100000
+CONFIG_DEBUG_UART_RAMOOPS_CONSOLE_SIZE=0x40000
+CONFIG_DEBUG_UART_RAMOOPS_FTRACE_SIZE=0x0
+CONFIG_DEBUG_UART_RAMOOPS_RECORD_SIZE=0x1000
+CONFIG_DEBUG_UART_RAMOOPS_PMSG_SIZE=0x0
+CONFIG_DEBUG_UART_SKIP_INIT=n

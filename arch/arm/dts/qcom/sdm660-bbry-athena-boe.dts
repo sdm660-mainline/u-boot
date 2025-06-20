@@ -1,0 +1,9 @@
+/dts-v1/;
+
+#include "sdm660-bbry.dtsi"
+
+/ {
+	model = "BlackBerry KEY2";
+	compatible = "bbry,athena-boe", "qcom,sdm660";
+	chassis-type = "handset";
+};

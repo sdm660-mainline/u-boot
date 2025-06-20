@@ -1,0 +1,10 @@
+
+/dts-v1/;
+
+#include "sdm660-bbry.dtsi"
+
+/ {
+	model = "BlackBerry KEY2 LE";
+	compatible = "bbry,luna-boe", "qcom,sdm636";
+	chassis-type = "handset";
+};

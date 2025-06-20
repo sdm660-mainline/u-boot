@@ -1,0 +1,16 @@
+# Configuration for building U-Boot as 2nd stage
+# bootloader to be flashed as part of boot.img to
+# boot partition on Blackberry KEY2 LE phones.
+
+#include "qcom_sdm660_defconfig"
+
+# luna device tree is not upstream yet
+CONFIG_OF_UPSTREAM=n
+CONFIG_DEFAULT_DEVICE_TREE="qcom/sdm636-bbry-luna"
+
+CONFIG_REQUIRE_SERIAL_CONSOLE=n
+CONFIG_SERIAL_PRESENT=n
+CONFIG_NO_FB_CLEAR=n
+
+CONFIG_USB_GADGET_VENDOR_NUM=0x0fca
+CONFIG_USB_GADGET_PRODUCT_NUM=0x8040

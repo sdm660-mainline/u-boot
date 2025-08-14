@@ -52,7 +52,7 @@ static int efi_mgr_read_bootflow(struct udevice *dev, struct bootflow *bflow)
 	efi_uintn_t size;
 	u16 *bootorder;
 
-	if (priv->fake_dev) {
+	if (priv && priv->fake_dev) {
 		bflow->state = BOOTFLOWST_READY;
 		return 0;
 	}

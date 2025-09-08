@@ -184,7 +184,20 @@ static ulong sdm660_gcc_set_rate(struct clk *clk, ulong rate)
 		clk_rcg_set_rate_mnd(priv->base, GCC_BLSP1_UART2_APPS_CLK_CMD_RCGR,
 				     ftbl_entry->pre_div, ftbl_entry->m, ftbl_entry->n,
 				     ftbl_entry->src, 8);
-		return ftbl_entry->freq;
+		//return ftbl_entry->freq;
+		/*
+		 * This works around bug in serial_msm driver incorrectly assuming that
+		 * default rate of 7372800 suits everyone. For SDM660 however the correct
+		 * uartclk is 1843200, as reported by Linux driver (when booted w/o U-Boot):
+		 *
+		 * > msm_serial c170000.serial: msm_serial: detected port #0
+		 * > msm_serial c170000.serial: uartclk = 1843200
+		 *
+		 * Rate of 1843200 allows serial_msm driver to calculate the correct
+		 * divider value of 16 (1843200 / 115200) for clock select (CSR) register,
+		 * which matches stock bootloader programmed value: 0xff.
+		 */
+		return 1843200;
 	case GCC_SDCC2_APPS_CLK:
 		ftbl_entry = qcom_find_freq(ftbl_sdcc2_apps_clk_src, rate);
 		/* we probably should enable source PLL for the selected frequency */

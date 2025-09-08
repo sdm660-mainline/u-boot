@@ -240,6 +240,8 @@ static struct msm_serial_data init_serial_data = {
 
 static inline void _debug_uart_init(void)
 {
+	if (IS_ENABLED(CONFIG_DEBUG_UART_SKIP_INIT))
+		return;
 	/*
 	 * Uncomment to turn on UART clocks when debugging U-Boot as aboot
 	 * on MSM8916. Supported debug UART clock IDs:

@@ -69,6 +69,7 @@
 
 /* blsp1_uart{1,2}_apps_clk_src share the same frequency table */
 static const struct freq_tbl ftbl_blsp1_uart1_apps_clk_src[] = {
+	F(1843200, CFG_CLK_SRC_GPLL0, 1, 192, 15625),
 	F(3686400, CFG_CLK_SRC_GPLL0, 1, 96, 15625),
 	F(7372800, CFG_CLK_SRC_GPLL0, 1, 192, 15625),
 	F(14745600, CFG_CLK_SRC_GPLL0, 1, 384, 15625),

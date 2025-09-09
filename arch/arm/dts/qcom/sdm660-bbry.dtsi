@@ -1,4 +1,3 @@
-
 /dts-v1/;
 
 #include "sdm636.dtsi"
@@ -10,18 +9,8 @@
 
 /delete-node/ &qhee_code;
 /delete-node/ &tz_mem;
-/delete-node/ &buffer_mem;
 
 / {
-    model = "BlackBerry KEY2 LE";
-    compatible = "bbry,luna", "qcom,sdm660", "qcom,sdm636";
-    chassis-type = "handset";
-
-    qcom,msm-id = <0x159 0x0>;
-    qcom,board-id = <0xaa000008 0x00>;
-    qcom,pmic-id = <0x1001b 0x101011a 0x00 0x00 0x1001b 0x201011a 0x00 0x00>;
-
-
 	chosen {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -47,167 +36,159 @@
 				height-mm = <110>;
 			};
 		};
-
-
-
-        watchdog: kpss-wdt@17817000 {
-            compatible = "qcom,kpss-wdt";
-            reg = <0x17817000 0x1000 0x0 0x0>;
-            reg-names = "wdt-base";
-        };
 	};
 
-    gpio_keys {
-            status = "okay";
-            compatible = "gpio-keys";
-            input-name = "gpio-keys";
-            pinctrl-names = "tlmm_gpio_key_active", "tlmm_gpio_key_suspend";
-            pinctrl-0 = <0x24e>;
-            pinctrl-1 = <0x24f>;
+	gpio_keys {
+		status = "okay";
+		compatible = "gpio-keys";
+		input-name = "gpio-keys";
+		pinctrl-names = "tlmm_gpio_key_active", "tlmm_gpio_key_suspend";
+		pinctrl-0 = <0x24e>;
+		pinctrl-1 = <0x24f>;
 
-            camera_focus {
-                    label = "camera_focus";
-                    gpios = <&tlmm 0x40 0x01>;
-                    linux,code = <0x210>;
-                    debounce-interval = <0x0f>;
-            };
+		camera_focus {
+				label = "camera_focus";
+				gpios = <&tlmm 0x40 0x01>;
+				linux,code = <0x210>;
+				debounce-interval = <0x0f>;
+		};
 
-            key-vol-up {
-                    label = "Volume Up";
-                    gpios = <&pm660l_gpios 0x07 0x01>;
-                    linux,code = <KEY_VOLUMEUP>;
-                    debounce-interval = <15>;
-            };
+		key-vol-up {
+				label = "Volume Up";
+				gpios = <&pm660l_gpios 0x07 0x01>;
+				linux,code = <KEY_VOLUMEUP>;
+				debounce-interval = <15>;
+		};
 
-            conven_key {
-                    label = "conven_key";
-                    gpios = <&tlmm 0x71 0x01>;
-                    linux,code = <0x226>;
-                    debounce-interval = <0x0f>;
-            };
-    };
+		conven_key {
+				label = "conven_key";
+				gpios = <&tlmm 0x71 0x01>;
+				linux,code = <0x226>;
+				debounce-interval = <0x0f>;
+		};
+	};
 
-    reserved-memory {
-        #address-cells = <0x02>;
-        #size-cells = <0x02>;
-        ranges;
+	reserved-memory {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
 
-        wlan_msa_guard@85600000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x85600000 0x00 0x100000>;
-        };
+		wlan_msa_guard@85600000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x85600000 0x00 0x100000>;
+		};
 
-        wlan_msa_mem@85700000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x85700000 0x00 0x100000>;
-                linux,phandle = <0xfd>;
-                phandle = <0xfd>;
-        };
+		wlan_msa_mem@85700000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x85700000 0x00 0x100000>;
+				linux,phandle = <0xfd>;
+				phandle = <0xfd>;
+		};
 
-        removed_regions@85800000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x85800000 0x00 0x5300000>;
-        };
+		removed_regions@85800000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x85800000 0x00 0x5300000>;
+		};
 
-        modem_fw_region@8ac00000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x8ac00000 0x00 0x7e00000>;
-                linux,phandle = <0x102>;
-                phandle = <0x102>;
-        };
+		modem_fw_region@8ac00000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x8ac00000 0x00 0x7e00000>;
+				linux,phandle = <0x102>;
+				phandle = <0x102>;
+		};
 
-        adsp_fw_region@92a00000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x92a00000 0x00 0x1e00000>;
-                linux,phandle = <0xff>;
-                phandle = <0xff>;
-        };
+		adsp_fw_region@92a00000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x92a00000 0x00 0x1e00000>;
+				linux,phandle = <0xff>;
+				phandle = <0xff>;
+		};
 
-        pil_mba_region@94800000 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x94800000 0x00 0x200000>;
-                linux,phandle = <0x105>;
-                phandle = <0x105>;
-        };
+		pil_mba_region@94800000 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x94800000 0x00 0x200000>;
+				linux,phandle = <0x105>;
+				phandle = <0x105>;
+		};
 
-        venus_fw_region {
-                compatible = "shared-dma-pool";
-                alloc-ranges = <0x00 0x80000000 0x00 0x20000000>;
-                reusable;
-                alignment = <0x00 0x400000>;
-                size = <0x00 0x800000>;
-                linux,phandle = <0xf8>;
-                phandle = <0xf8>;
-        };
+		venus_fw_region {
+				compatible = "shared-dma-pool";
+				alloc-ranges = <0x00 0x80000000 0x00 0x20000000>;
+				reusable;
+				alignment = <0x00 0x400000>;
+				size = <0x00 0x800000>;
+				linux,phandle = <0xf8>;
+				phandle = <0xf8>;
+		};
 
-        adsp_region {
-            compatible = "shared-dma-pool";
-            alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
-            reusable;
-            alignment = <0x00 0x400000>;
-            size = <0x00 0x800000>;
-            linux,phandle = <0xee>;
-            phandle = <0xee>;
-        };
+		adsp_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
+			reusable;
+			alignment = <0x00 0x400000>;
+			size = <0x00 0x800000>;
+			linux,phandle = <0xee>;
+			phandle = <0xee>;
+		};
 
-        qseecom_region {
-                compatible = "shared-dma-pool";
-                alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
-                reusable;
-                alignment = <0x00 0x400000>;
-                size = <0x00 0x1c00000>;
-                linux,phandle = <0x10b>;
-                phandle = <0x10b>;
-        };
+		qseecom_region {
+				compatible = "shared-dma-pool";
+				alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
+				reusable;
+				alignment = <0x00 0x400000>;
+				size = <0x00 0x1c00000>;
+				linux,phandle = <0x10b>;
+				phandle = <0x10b>;
+		};
 
-        secure_region {
-                compatible = "shared-dma-pool";
-                alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
-                reusable;
-                alignment = <0x00 0x400000>;
-                size = <0x00 0x5c00000>;
-                linux,phandle = <0x10c>;
-                phandle = <0x10c>;
-        };
+		secure_region {
+				compatible = "shared-dma-pool";
+				alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
+				reusable;
+				alignment = <0x00 0x400000>;
+				size = <0x00 0x5c00000>;
+				linux,phandle = <0x10c>;
+				phandle = <0x10c>;
+		};
 
-        linux,cma {
-                compatible = "shared-dma-pool";
-                alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
-                reusable;
-                alignment = <0x00 0x400000>;
-                size = <0x00 0x2c00000>;
-                linux,cma-default;
-        };
+		linux,cma {
+				compatible = "shared-dma-pool";
+				alloc-ranges = <0x00 0x00 0x00 0xffffffff>;
+				reusable;
+				alignment = <0x00 0x400000>;
+				size = <0x00 0x2c00000>;
+				linux,cma-default;
+		};
 
-        reset_mem@0 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x00 0x00 0x00>;
-                oem,reg = <0x01 0x7e3bb000 0x00 0x1000>;
-                oem,reg-ddt = <0x01 0x7e33f000 0x00 0x1000>;
-                oem,writeable;
-                label = "reset";
-                linux,phandle = <0x283>;
-                phandle = <0x283>;
-        };
+		reset_mem@0 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x00 0x00 0x00>;
+				oem,reg = <0x01 0x7e3bb000 0x00 0x1000>;
+				oem,reg-ddt = <0x01 0x7e33f000 0x00 0x1000>;
+				oem,writeable;
+				label = "reset";
+				linux,phandle = <0x283>;
+				phandle = <0x283>;
+		};
 
-        reset_log_mem@0 {
-                compatible = "removed-dma-pool";
-                no-map;
-                reg = <0x00 0x00 0x00 0x00>;
-                oem,reg = <0x01 0x7e3bc000 0x00 0x4000>;
-                oem,reg-ddt = <0x01 0x7e340000 0x00 0x80000>;
-                label = "reset_log";
-                linux,phandle = <0x284>;
-                phandle = <0x284>;
-        };
-    };
+		reset_log_mem@0 {
+				compatible = "removed-dma-pool";
+				no-map;
+				reg = <0x00 0x00 0x00 0x00>;
+				oem,reg = <0x01 0x7e3bc000 0x00 0x4000>;
+				oem,reg-ddt = <0x01 0x7e340000 0x00 0x80000>;
+				label = "reset_log";
+				linux,phandle = <0x284>;
+				phandle = <0x284>;
+		};
+	};
 
     vph_pwr: vph-pwr-regulator {
 		compatible = "regulator-fixed";
@@ -225,8 +206,8 @@
 			voltage-min-design-microvolt = <3400000>;
 			voltage-max-design-microvolt = <4402500>;
 	};
-
 };
+
 
 &pon_pwrkey {
 	status = "okay";

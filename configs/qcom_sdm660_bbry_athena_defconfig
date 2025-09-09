@@ -6,7 +6,7 @@
 
 # luna device tree is not upstream yet
 CONFIG_OF_UPSTREAM=n
-CONFIG_DEFAULT_DEVICE_TREE="qcom/sdm636-bbry-luna-boe"
+CONFIG_DEFAULT_DEVICE_TREE="qcom/sdm660-bbry-athena-boe"
 
 CONFIG_REQUIRE_SERIAL_CONSOLE=n
 CONFIG_SERIAL_PRESENT=n

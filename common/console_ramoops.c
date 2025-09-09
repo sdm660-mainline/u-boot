@@ -174,7 +174,7 @@ static struct persistent_ram_zone *persistent_ram_new(phys_addr_t start, size_t 
 				prz->buffer->size, prz->buffer->start);
 			persistent_ram_zap(prz);
 		} else {
-			log_info("reusing existing buffer: size %u, start %u\n",
+			log_debug("reusing existing buffer: size %u, start %u\n",
 				 prz->buffer->size, prz->buffer->start);
 		}
 	} else {

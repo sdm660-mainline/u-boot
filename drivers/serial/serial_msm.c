@@ -205,6 +205,15 @@ static int msm_serial_of_to_plat(struct udevice *dev)
 		log_debug("No clock frequency specified, using default rate\n");
 		/* Default for APQ8016 */
 		priv->clk_rate = 7372800;
+
+		/* Default uartclk is different for SDM630/660 platform */
+		if (ofnode_device_is_compatible(ofnode_root(), "qcom,sdm660")
+			|| ofnode_device_is_compatible(ofnode_root(), "qcom,sda660")
+			|| ofnode_device_is_compatible(ofnode_root(), "qcom,sdm636")
+			|| ofnode_device_is_compatible(ofnode_root(), "qcom,sdm630")) {
+			priv->clk_rate = 1843200;
+			log_debug("sdm660: Overriding default uartclk to 1843200\n");
+		}
 	}
 
 	return 0;

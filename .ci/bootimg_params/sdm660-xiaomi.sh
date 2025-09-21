@@ -1,0 +1,6 @@
+flash_offset_base="0x00000000"
+flash_offset_kernel="0x00008000"
+flash_offset_ramdisk="0x01000000"
+flash_offset_second="0x00f00000"
+flash_offset_tags="0x00000100"
+flash_pagesize="4096"

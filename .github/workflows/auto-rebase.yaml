@@ -1,0 +1,62 @@
+name: Test rebase on master
+on:
+  schedule:
+    # run at 03:19 once every day
+    - cron: "19 3 * * *"
+  workflow_dispatch:
+jobs:
+  auto-rebase:
+    runs-on: [self-hosted, Linux, X64, u-boot]
+    steps:
+      - name: Print debug info
+        run: |
+          echo "GITHUB_SERVER_URL: ${GITHUB_SERVER_URL}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
+          echo "GITHUB_REF:        ${GITHUB_REF}"
+          echo "GITHUB_REF_NAME:   ${GITHUB_REF_NAME}"
+      - name: Prepare remotes
+        run: |
+          git remote add upstream https://github.com/u-boot/u-boot.git || true
+          git fetch upstream
+          git remote add sdm660 ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} || true
+          git fetch sdm660
+          echo "Remotes:"
+          git remote -vv
+      - name: Prepare branch
+        run: |
+          git branch -D test_rebase || true
+          git checkout -b ${GITHUB_REF_NAME} --track sdm660/${GITHUB_REF_NAME} || true
+          git checkout ${GITHUB_REF_NAME} || true
+          git pull -q
+          git checkout -b test-rebase
+          echo "Branches:"
+          git branch -vv
+      - name: Setup git identity
+        run: |
+          git config user.name actions-runner
+          git config user.email actions-runner@localhost
+      - name: Try rebase
+        run: |
+          # Just in case there was some previous failed rebase
+          rm -fr ".git/rebase-merge"
+          git rebase upstream/master
+      - name: Build rebased branch
+        run: |
+          mkdir -p .output
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output clean
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output DEVICE_TREE=qcom/sda660-inforce-ifc6560 -j$(nproc)
+      - name: Remove temp branch
+        # Run this step even if one of the previous steps has failed
+        if: ${{ !cancelled() }}
+        run: |
+          # in case if rebase has failed, abort it
+          git rebase --abort || true
+          git switch ${GITHUB_REF_NAME} || true
+          git branch -D test-rebase || true
+          echo "Branches:"
+          git branch -vv
+      - name: Show results
+        run: |
+          echo "Rebase & build was successful onto:"
+          head -n7 Makefile

@@ -1,0 +1,82 @@
+name: Build U-Boot for sdm660 devices
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - v*-sdm660
+      - release/v*-sdm660
+      - master-sdm660
+    tags:
+      - v*-sdm660
+  workflow_dispatch:
+
+jobs:
+  build-uboot:
+    runs-on: [self-hosted, Linux, X64, u-boot]
+    steps:
+      - name: Print debug info and some pre-run checks
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "GITHUB_BASE_REF:  $GITHUB_BASE_REF"
+          echo "GITHUB_HEAD_REF:  $GITHUB_HEAD_REF"
+          echo "GITHUB_REF:       $GITHUB_REF"
+          echo "GITHUB_REF_TYPE:  $GITHUB_REF_TYPE"
+          echo -n "whoami: " ; whoami
+          echo -n "groups: " ; groups
+          echo "doas permissions check:"
+          doas -C /etc/doas.conf apt update
+          echo "Cross-gcc version:"
+          aarch64-linux-gnu-gcc -v
+      - name: Update ubuntu packages
+        run: |
+          doas -n apt update
+          doas -n apt -y upgrade
+      - name: Checkout source from git
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+      - name: Prepare .config using generic sdm660-phone config for upstream DTS
+        run: |
+          mkdir -p .output
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config
+      - name: Build u-boot with upstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output DEVICE_TREE=qcom/sda660-inforce-ifc6560 -j$(nproc)
+      - name: Prepare .config using generic sdm660-phone config for downstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config
+      - name: Build u-boot with downstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output -j$(nproc)
+      - name: List all compiled upstream DTBs
+        run: |
+          echo "Contents of .output/dts/upstream/src/arm64/qcom/ :"
+          ls -l .output/dts/upstream/src/arm64/qcom/sda660-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm630-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm636-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm660-*.dtb
+      - name: List all compiled downstream DTBs
+        run: |
+          echo "Contents of .output/arch/arm/dts/qcom/ :"
+          ls -l .output/arch/arm/dts/qcom/*.dtb
+      - name: Create Android boot images
+        run: |
+          cp -v .ci/*.sh .output/
+          cp -v -r .ci/bootimg_params/ .output/
+          cd .output/
+          ./bootimg-all.sh
+      - name: Save boot images as pipeline artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Boot images
+          include-hidden-files: true
+          path: .output/boot*.img
+      - name: Create a draft a release if tag was pushed
+        uses: softprops/action-gh-release@v2.5.0
+        if: github.ref_type == 'tag'
+        with:
+          draft: true
+          files: .output/boot-*.img
+          fail_on_unmatched_files: true

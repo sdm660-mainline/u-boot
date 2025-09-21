@@ -1,0 +1,43 @@
+name: Build U-Boot for sdm660 devices
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - v*-sdm660
+      - master-sdm660
+    tags:
+      - v*-sdm660
+  workflow_dispatch:
+jobs:
+  build-uboot:
+    runs-on: [self-hosted, Linux, X64, u-boot]
+    steps:
+      - name: Print debug info and some pre-run checks
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "GITHUB_BASE_REF:  $GITHUB_BASE_REF"
+          echo "GITHUB_HEAD_REF:  $GITHUB_HEAD_REF"
+          echo "GITHUB_REF:       $GITHUB_REF"
+          echo -n "whoami: " ; whoami
+          echo -n "groups: " ; groups
+          echo "doas permissions check:"
+          doas -C /etc/doas.conf apt update
+          echo "Cross-gcc version:"
+          aarch64-linux-gnu-gcc -v
+      - name: Update ubuntu packages
+        run: |
+          doas -n apt update
+          doas -n apt -y upgrade
+      - name: Checkout source from git
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+      - name: Prepare .config using some specific defconfig
+        run: |
+          mkdir -p .output
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_sdm660_lavender_defconfig
+      - name: Build u-boot
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output -j$(nproc)

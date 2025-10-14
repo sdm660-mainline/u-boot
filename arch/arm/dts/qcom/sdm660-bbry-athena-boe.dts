@@ -4,6 +4,6 @@
 
 / {
 	model = "BlackBerry KEY2";
-	compatible = "bbry,athena-boe", "qcom,sdm660",
+	compatible = "bbry,athena-boe", "qcom,sdm660";
 	chassis-type = "handset";
-}
+};

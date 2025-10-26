@@ -487,6 +487,8 @@ static void configure_env(void)
 	env_set("fdtfile", dt_path);
 
 	qcom_set_serialno();
+
+	env_set("bootargs", get_cmdline());
 }
 
 void qcom_show_boot_source(void)

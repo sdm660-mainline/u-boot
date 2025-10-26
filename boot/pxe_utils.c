@@ -653,8 +653,27 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
 
 		cli_simple_process_macros(bootargs, finalbootargs,
 					  sizeof(finalbootargs));
-		env_set("bootargs", finalbootargs);
-		printf("append: %s\n", finalbootargs);
+
+		/* If the bootargs already set, append to it */
+		if (env_get("bootargs")) {
+			size_t len = strlen(env_get("bootargs")) +
+				     strlen(finalbootargs) + 2;
+			char *new_bootargs = malloc(len);
+			if (!new_bootargs) {
+				printf("malloc fail (bootargs)\n");
+				goto cleanup;
+			}
+			snprintf(new_bootargs, len, "%s %s",
+				 env_get("bootargs"), finalbootargs);
+			env_set("bootargs", new_bootargs);
+			printf("append: %s\n", new_bootargs);
+			free(new_bootargs);
+		} else {
+			/* If the bootargs is not set, just set it */
+			env_set("bootargs", finalbootargs);
+			printf("append: %s\n", finalbootargs);
+		}
+
 	}
 
 	/*

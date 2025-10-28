@@ -34,10 +34,27 @@ jobs:
         with:
           clean: true
           fetch-depth: 0
-      - name: Prepare .config using some specific defconfig
+      - name: Prepare .config using generic sdm660-phone config for upstream DTS
         run: |
           mkdir -p .output
-          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_sdm660_lavender_defconfig
-      - name: Build u-boot
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config
+      - name: Build u-boot with upstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output DEVICE_TREE=qcom/sda660-inforce-ifc6560 -j$(nproc)
+      - name: Prepare .config using generic sdm660-phone config for downstream DTS
+        run: |
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config
+      - name: Build u-boot with downstream DTS
         run: |
           make CROSS_COMPILE=aarch64-linux-gnu- O=.output -j$(nproc)
+      - name: List all compiled upstream DTBs
+        run: |
+          echo "Contents of .output/dts/upstream/src/arm64/qcom/ :"
+          ls -l .output/dts/upstream/src/arm64/qcom/sda660-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm630-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm636-*.dtb
+          ls -l .output/dts/upstream/src/arm64/qcom/sdm660-*.dtb
+      - name: List all compiled downstream DTBs
+        run: |
+          echo "Contents of .output/arch/arm/dts/qcom/ :"
+          ls -l .output/arch/arm/dts/qcom/*.dtb

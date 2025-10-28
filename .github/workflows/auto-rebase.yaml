@@ -44,8 +44,8 @@ jobs:
         run: |
           mkdir -p .output
           make CROSS_COMPILE=aarch64-linux-gnu- O=.output clean
-          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_sdm660_lavender_defconfig
-          make CROSS_COMPILE=aarch64-linux-gnu- O=.output -j$(nproc)
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output qcom_defconfig qcom-sdm660-phone.config
+          make CROSS_COMPILE=aarch64-linux-gnu- O=.output DEVICE_TREE=qcom/sda660-inforce-ifc6560 -j$(nproc)
       - name: Remove temp branch
         # Run this step even if one of the previous steps has failed
         if: ${{ !cancelled() }}

@@ -2,7 +2,7 @@
 # bootloader to be flashed as part of boot.img to
 # boot partition on Sony Xperia XA2 phones.
 
-#include "qcom_sdm660_defconfig"
+#include "qcom_defconfig"
 
 # sony-nile platform device trees are upstream
 CONFIG_OF_UPSTREAM=y

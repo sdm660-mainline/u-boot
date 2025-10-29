@@ -1,0 +1,23 @@
+name: Build U-Boot Android Bootimgs for sdm660 devices
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - v*-sdm660
+    tags:
+      - v*-sdm660
+  workflow_dispatch:
+jobs:
+  build-bbry-athena-boe:
+    uses: sajattack/sdm660-u-boot/.github/workflows/build-bootimg.yml@saj/bootimg-ci
+    with:
+      DEFCONFIG: qcom_sdm660_bbry_athena_defconfig
+      DTB: qcom/sdm660-bbry-athena-boe
+      DEVICE: bbry-athena-boe
+  build-bbry-luna-boe:
+    uses: sajattack/sdm660-u-boot/.github/workflows/build-bootimg.yml@saj/bootimg-ci
+    with:
+      DEFCONFIG: qcom_sdm636_bbry_luna_defconfig
+      DTB: qcom/sdm636-bbry-luna-boe
+      DEVICE: bbry-luna-boe

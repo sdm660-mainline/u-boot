@@ -1,7 +1,7 @@
 name: Build U-Boot Android Bootimgs for sdm660 devices
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  #pull_request:
+    #types: [opened, synchronize, reopened]
   push:
     branches:
       - v*-sdm660

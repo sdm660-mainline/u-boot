@@ -9,15 +9,31 @@ on:
       - v*-sdm660
   workflow_dispatch:
 jobs:
-  build-bbry-athena-boe:
-    uses: sajattack/sdm660-u-boot/.github/workflows/build-bootimg.yml@saj/bootimg-ci
-    with:
-      DEFCONFIG: qcom_sdm660_bbry_athena_defconfig
-      DTB: qcom/sdm660-bbry-athena-boe
-      DEVICE: bbry-athena-boe
-  build-bbry-luna-boe:
-    uses: sajattack/sdm660-u-boot/.github/workflows/build-bootimg.yml@saj/bootimg-ci
-    with:
-      DEFCONFIG: qcom_sdm636_bbry_luna_defconfig
-      DTB: qcom/sdm636-bbry-luna-boe
-      DEVICE: bbry-luna-boe
+  build-downstream:
+    runs-on: ubuntu-latest
+    env:
+      DEFCONFIG: "qcom_defconfig qcom-sdm660-phone.config"
+      DEVICES: "bbry-luna bbry-athena"
+      DTBS: "qcom/sdm636-bbry-luna-boe qcom/sdm660-bbry-athena-boe"
+    steps:
+      - name: Download apt packages
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu libgnutls28-dev xxd
+      - name: Download mkbootimg
+        run: |
+          wget https://launchpadlibrarian.net/810765814/mkbootimg
+          chmod +x mkbootimg
+          sudo mv mkbootimg /usr/bin/mkbootimg
+      - name: Checkout source from git
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+      - name: Run build script
+        run: ./sdm660-build.sh
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: u-boot-sdm660-downstream
+          path: binaries/

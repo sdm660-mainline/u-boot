@@ -89,7 +89,6 @@ assert_ci_variable() {
 }
 
 assert_ci_variable DEFCONFIG
-assert_ci_variable DEVICE
 
 # U-Boot build directory
 UBOOT_OUTDIR="$UBOOT_SOURCE/.output"
@@ -134,7 +133,7 @@ uboot_do_build() {
 	dtb="$1"
 
 	uboot_configure
-	uboot_make DEVICE_TREE="$dtb"
+	uboot_make
 	pr_info "Finished building U-Boot!"
 }
 

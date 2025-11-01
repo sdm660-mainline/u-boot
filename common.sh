@@ -143,7 +143,7 @@ uboot_gzip() {
 	local _uboot varname
 	_uboot="$1"
 	varname="$2"
-	gzip -f "$UBOOT_OUTDIR/$_uboot"
+	gzip -fk "$UBOOT_OUTDIR/$_uboot"
 	# pr_debug "varname: %s" "$varname"
 	logeval "$varname=\"${_uboot}.gz\""
 }

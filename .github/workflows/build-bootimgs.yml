@@ -12,7 +12,7 @@ jobs:
   build-downstream:
     runs-on: ubuntu-latest
     env:
-      DEFCONFIG: "qcom_defconfig qcom-sdm660-phone.config"
+      DEFCONFIG: "qcom_defconfig qcom-sdm660-phone.config qcom-downstream.config"
       DEVICES: "bbry-luna bbry-athena"
       DTBS: "qcom/sdm636-bbry-luna-boe qcom/sdm660-bbry-athena-boe"
     steps:

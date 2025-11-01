@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - v*-sdm660
+      - master-sdm660
     tags:
       - v*-sdm660
   workflow_dispatch:

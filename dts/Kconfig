@@ -145,6 +145,30 @@ config OF_UPSTREAM_INCLUDE_LOCAL_FALLBACK_DTBOS
 
 	  If unsure, say N.
 
+config OF_DOWNSTREAM_BUILD_VENDOR
+	bool "Build all downstream devicetree files for a particular vendor"
+	depends on !OF_UPSTREAM
+	help
+	  Enable building all devicetree files for a particular vendor. This
+	  is useful for generic U-Boot configurations where many boards can
+	  be supported with a single binary.
+
+	  This is only available for platforms NOT using upstream devicetree.
+
+config OF_DOWNSTREAM_VENDOR
+	string "Vendor to build all downstream devicetree files for"
+	depends on OF_DOWNSTREAM_BUILD_VENDOR
+	default "qcom" if ARCH_SNAPDRAGON
+	default "rockchip" if ARCH_ROCKCHIP
+	default "amlogic" if ARCH_MESON
+	default "allwinner" if ARCH_SUNXI
+	default "mediatek" if ARCH_MEDIATEK
+	default "marvell" if ARCH_MVEBU || ARCH_KIRKWOOD
+	default "xilinx" if ARCH_VERSAL || ARCH_ZYNQ
+	default "nvidia" if ARCH_TEGRA
+	help
+	  Select the vendor to build all devicetree files for.
+
 choice
 	prompt "Provider of DTB for DT control"
 	depends on OF_CONTROL

@@ -58,3 +58,15 @@ jobs:
         run: |
           echo "Contents of .output/arch/arm/dts/qcom/ :"
           ls -l .output/arch/arm/dts/qcom/*.dtb
+      - name: Create Android boot images
+        run: |
+          cp -v .ci/*.sh .output/
+          cp -v -r .ci/bootimg_params/ .output/
+          cd .output/
+          ./bootimg-all.sh
+      - name: Save boot images as pipeline artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Boot images
+          include-hidden-files: true
+          path: .output/boot*.img

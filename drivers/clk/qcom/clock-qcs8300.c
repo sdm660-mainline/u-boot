@@ -112,8 +112,8 @@ static const struct qcom_reset_map qcs8300_gcc_resets[] = {
 };
 
 static const struct qcom_power_map qcs8300_gdscs[] = {
-	[GCC_UFS_PHY_GDSC] = { 0x83004 },
-	[GCC_USB30_PRIM_GDSC] = { 0x1B004 },
+	[GCC_UFS_PHY_GDSC] = { .reg = 0x83004, .flags = RETAIN_FF_ENABLE | POLL_CFG_GDSCR },
+	[GCC_USB30_PRIM_GDSC] = { .reg = 0x1B004, .flags = RETAIN_FF_ENABLE | POLL_CFG_GDSCR },
 };
 
 static struct msm_clk_data qcs8300_gcc_data = {

@@ -5,10 +5,12 @@ on:
   push:
     branches:
       - v*-sdm660
+      - release/v*-sdm660
       - master-sdm660
     tags:
       - v*-sdm660
   workflow_dispatch:
+
 jobs:
   build-uboot:
     runs-on: [self-hosted, Linux, X64, u-boot]
@@ -19,6 +21,7 @@ jobs:
           echo "GITHUB_BASE_REF:  $GITHUB_BASE_REF"
           echo "GITHUB_HEAD_REF:  $GITHUB_HEAD_REF"
           echo "GITHUB_REF:       $GITHUB_REF"
+          echo "GITHUB_REF_TYPE:  $GITHUB_REF_TYPE"
           echo -n "whoami: " ; whoami
           echo -n "groups: " ; groups
           echo "doas permissions check:"
@@ -70,3 +73,10 @@ jobs:
           name: Boot images
           include-hidden-files: true
           path: .output/boot*.img
+      - name: Create a draft a release if tag was pushed
+        uses: softprops/action-gh-release@v2.5.0
+        if: github.ref_type == 'tag'
+        with:
+          draft: true
+          files: .output/boot-*.img
+          fail_on_unmatched_files: true

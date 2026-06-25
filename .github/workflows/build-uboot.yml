@@ -24,14 +24,14 @@ jobs:
           echo "GITHUB_REF_TYPE:  $GITHUB_REF_TYPE"
           echo -n "whoami: " ; whoami
           echo -n "groups: " ; groups
-          echo "doas permissions check:"
-          doas -C /etc/doas.conf apt update
           echo "Cross-gcc version:"
           aarch64-linux-gnu-gcc -v
+          echo "Clang version:"
+          clang --version
       - name: Update ubuntu packages
         run: |
-          doas -n apt update
-          doas -n apt -y upgrade
+          sudo apt update
+          sudo apt -y upgrade
       - name: Checkout source from git
         uses: actions/checkout@v6
         with:

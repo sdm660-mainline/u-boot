@@ -42,4 +42,11 @@ config SYS_CONFIG_NAME
 	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
 	  will be used for board configuration.
 
+config CMD_QCOM_DEBUG
+	bool "Enable Qualcomm-specific U-Boot debug commands"
+	default n
+	help
+	  Enable Qualcomm specific U-Boot commands for debugging, such as dumping
+	  various regulator settings or efuses.
+
 endif

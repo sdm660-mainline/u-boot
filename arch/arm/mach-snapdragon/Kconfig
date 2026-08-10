@@ -90,4 +90,11 @@ config QCOM_EL2_GUNYAH_EXIT_SUPPORT
 
 endchoice
 
+config CMD_QCOM_DEBUG
+	bool "Enable Qualcomm-specific U-Boot debug commands"
+	default n
+	help
+	  Enable Qualcomm specific U-Boot commands for debugging, such as dumping
+	  various regulator settings or efuses.
+
 endif

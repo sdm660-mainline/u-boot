@@ -119,10 +119,11 @@ void efi_load_distro_fdt(efi_handle_t handle, void **fdt, efi_uintn_t *fdt_size)
 		if (!file)
 			break;
 		ret = efi_load_image_from_path(true, file, fdt, fdt_size);
-		efi_free_pool(file);
 		if (ret == EFI_SUCCESS) {
 			log_debug("Fdt %pD loaded\n", file);
+			efi_free_pool(file);
 			break;
 		}
+		efi_free_pool(file);
 	}
 }

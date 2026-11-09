@@ -1734,6 +1734,13 @@ efi_status_t efi_install_configuration_table(const efi_guid_t *guid,
 	systab.nr_tables = i + 1;
 
 out:
+	if (IS_ENABLED(CONFIG_EFI_DTB_TRACE) && !guidcmp(guid, &efi_guid_fdt)) {
+		log_info("EFI-DTB: EFI_FDT_GUID configuration table %s: %p\n",
+			 table ? "set" : "removed", table);
+		if (table)
+			efi_dtb_trace("config-table", table);
+	}
+
 	/* systab.nr_tables may have changed. So we need to update the CRC32 */
 	efi_update_table_header_crc32(&systab.hdr);
 

@@ -24,6 +24,7 @@
 #include <search.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
+#include <linux/libfdt.h>
 
 #define BS systab.boottime
 
@@ -620,6 +621,51 @@ static int do_efi_show_tables(struct cmd_tbl *cmdtp, int flag,
 			      int argc, char *const argv[])
 {
 	efi_show_tables(&systab);
+
+	return CMD_RET_SUCCESS;
+}
+
+/**
+ * do_efi_show_dtb() - show installed device-tree configuration table
+ *
+ * @cmdtp:	Command table
+ * @flag:	Command flag
+ * @argc:	Number of arguments
+ * @argv:	Argument array
+ * Return:	CMD_RET_SUCCESS on success, CMD_RET_FAILURE on failure
+ *
+ * Implement efidebug "dtb" sub-command.
+ * Show the device tree installed with the EFI_FDT_GUID configuration table,
+ * including its root compatible and model strings.
+ */
+static int do_efi_show_dtb(struct cmd_tbl *cmdtp, int flag,
+			   int argc, char *const argv[])
+{
+	const char *compatible = NULL, *model = NULL;
+	const void *prop;
+	void *fdt;
+	int len;
+
+	fdt = efi_get_configuration_table(&efi_guid_fdt);
+	if (!fdt) {
+		printf("No device-tree configuration table installed\n");
+		return CMD_RET_FAILURE;
+	}
+	if (fdt_check_header(fdt)) {
+		printf("Invalid device-tree at %p\n", fdt);
+		return CMD_RET_FAILURE;
+	}
+
+	prop = fdt_getprop(fdt, 0, "compatible", &len);
+	if (prop)
+		compatible = prop;
+	prop = fdt_getprop(fdt, 0, "model", &len);
+	if (prop)
+		model = prop;
+
+	printf("device-tree: %p size %#x\n", fdt, fdt_totalsize(fdt));
+	printf("  compatible: %s\n", compatible ?: "(none)");
+	printf("  model: %s\n", model ?: "(none)");
 
 	return CMD_RET_SUCCESS;
 }
@@ -1561,6 +1607,8 @@ static struct cmd_tbl cmd_efidebug_sub[] = {
 			 "", ""),
 	U_BOOT_CMD_MKENT(tables, CONFIG_SYS_MAXARGS, 1, do_efi_show_tables,
 			 "", ""),
+	U_BOOT_CMD_MKENT(dtb, CONFIG_SYS_MAXARGS, 1, do_efi_show_dtb,
+			 "", ""),
 	U_BOOT_CMD_MKENT(test, CONFIG_SYS_MAXARGS, 1, do_efi_test,
 			 "", ""),
 	U_BOOT_CMD_MKENT(query, CONFIG_SYS_MAXARGS, 1, do_efi_query_info,
@@ -1656,6 +1704,8 @@ U_BOOT_LONGHELP(efidebug,
 	"  - show UEFI memory map\n"
 	"efidebug tables\n"
 	"  - show UEFI configuration tables\n"
+	"efidebug dtb\n"
+	"  - show installed device-tree configuration table\n"
 #ifdef CONFIG_EFI_BOOTMGR
 	"efidebug test bootmgr\n"
 	"  - run simple bootmgr for test\n"

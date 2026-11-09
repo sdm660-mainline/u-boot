@@ -580,6 +580,7 @@ void *efi_get_configuration_table(const efi_guid_t *guid)
 efi_status_t efi_install_fdt(void *fdt)
 {
 	struct bootm_headers img = { 0 };
+	const char *origin = "argument";
 	efi_status_t ret;
 
 	/*
@@ -595,9 +596,11 @@ efi_status_t efi_install_fdt(void *fdt)
 
 		/* Check if there is a hardware device tree */
 		fdt_opt = env_get("fdt_addr");
+		origin = "env:fdt_addr";
 		/* Use our own device tree as fallback */
 		if (!fdt_opt) {
 			fdt_opt = env_get("fdtcontroladdr");
+			origin = "env:fdtcontroladdr";
 			if (!fdt_opt) {
 				log_err("need device tree\n");
 				return EFI_NOT_FOUND;
@@ -617,6 +620,8 @@ efi_status_t efi_install_fdt(void *fdt)
 		return EFI_LOAD_ERROR;
 	}
 
+	efi_dtb_trace(origin, fdt);
+
 	if (CONFIG_IS_ENABLED(GENERATE_ACPI_TABLE)) {
 		/* Create memory reservations as indicated by the device tree */
 		efi_carve_out_dt_rsv(fdt);
@@ -634,6 +639,8 @@ efi_status_t efi_install_fdt(void *fdt)
 		log_err("failed to process device tree\n");
 		return EFI_LOAD_ERROR;
 	}
+
+	efi_dtb_trace("fixed-up", fdt);
 
 	/* Create memory reservations as indicated by the device tree */
 	efi_carve_out_dt_rsv(fdt);
@@ -654,6 +661,10 @@ efi_status_t efi_install_fdt(void *fdt)
 		log_err("failed to install device tree\n");
 		return ret;
 	}
+
+	if (IS_ENABLED(CONFIG_EFI_DTB_TRACE))
+		log_info("EFI-DTB: installed as EFI_FDT_GUID configuration table (%p)\n",
+			 fdt);
 
 	return EFI_SUCCESS;
 }

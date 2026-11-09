@@ -1256,6 +1256,9 @@ static efi_status_t load_fdt_from_load_option(void **fdt)
 	if (!dp)
 		return EFI_SUCCESS;
 
+	if (IS_ENABLED(CONFIG_EFI_DTB_TRACE))
+		log_info("EFI-DTB: Boot####: FDT device path %pD\n", dp);
+
 	/* Open file */
 	f = efi_file_from_path(dp);
 	if (!f) {
@@ -1280,6 +1283,9 @@ static efi_status_t load_fdt_from_load_option(void **fdt)
 		log_err("Can't read fdt\n");
 		free(*fdt);
 		*fdt = NULL;
+	} else if (IS_ENABLED(CONFIG_EFI_DTB_TRACE)) {
+		log_info("EFI-DTB: Boot####: read %zu bytes\n",
+			 (size_t)filesize);
 	}
 
 out:
@@ -1306,6 +1312,7 @@ efi_status_t efi_bootmgr_run(void *fdt)
 	void *load_options;
 	efi_status_t ret;
 	void *fdt_lo = NULL, *fdt_distro = NULL;
+	const char *dtb_src = "argument";
 	efi_uintn_t fdt_size;
 
 	/* Initialize EFI drivers */
@@ -1324,14 +1331,24 @@ efi_status_t efi_bootmgr_run(void *fdt)
 			ret = load_fdt_from_load_option(&fdt_lo);
 			if (ret != EFI_SUCCESS)
 				goto out;
-			if (fdt_lo)
+			if (fdt_lo) {
 				fdt = fdt_lo;
+				dtb_src = "Boot####";
+			}
 		}
 		if (!fdt) {
 			efi_load_distro_fdt(handle, &fdt_distro, &fdt_size);
 			fdt = fdt_distro;
+			if (fdt)
+				dtb_src = "ESP";
 		}
+		if (!fdt)
+			dtb_src = "internal";
 	}
+
+	if (IS_ENABLED(CONFIG_EFI_DTB_TRACE))
+		log_info("EFI-DTB: bootmgr: source=%s\n", dtb_src);
+	efi_dtb_trace(dtb_src, fdt);
 
 	/*
 	 * Needed in ACPI case to create reservations based on

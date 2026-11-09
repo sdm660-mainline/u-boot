@@ -430,6 +430,17 @@ config EFI_DT_FIXUP
 	  The EFI device-tree fix-up protocol provides a function to let the
 	  firmware apply fix-ups. This may be used by boot loaders.
 
+config EFI_DTB_TRACE
+	bool "Trace device-tree selection for EFI payloads"
+	default n
+	help
+	  Log which device tree is selected for an EFI payload, where it came
+	  from (command line argument, Boot#### load option, ESP, $fdt_addr or
+	  $fdtcontroladdr), and the root "compatible" and "model" it contains.
+
+	  Enable this when verifying that the firmware hands the expected DTB
+	  to a payload such as a UKI, or when debugging .dtbauto matching.
+
 config EFI_LOADER_HII
 	bool "HII protocols"
 	default y if !HAS_BOARD_SIZE_LIMIT

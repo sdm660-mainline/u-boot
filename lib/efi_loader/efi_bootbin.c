@@ -360,10 +360,17 @@ efi_status_t efi_bootflow_run(struct bootflow *bflow)
 
 	if (bflow->flags & BOOTFLOWF_USE_BUILTIN_FDT) {
 		log_debug("Booting with built-in fdt\n");
+		if (IS_ENABLED(CONFIG_EFI_DTB_TRACE))
+			log_info("EFI-DTB: bootflow: source=built-in/internal\n");
 		fdt = EFI_FDT_USE_INTERNAL;
 	} else {
 		log_debug("Booting with external fdt\n");
 		fdt = map_sysmem(bflow->fdt_addr, 0);
+		if (IS_ENABLED(CONFIG_EFI_DTB_TRACE))
+			log_info("EFI-DTB: bootflow: source=external file=%s addr=%#lx\n",
+				 bflow->fdt_fname ?: "(unknown)",
+				 (ulong)bflow->fdt_addr);
+		efi_dtb_trace("bootflow:external", fdt);
 	}
 	ret = efi_binary_run_dp(bflow->buf, bflow->size, fdt, NULL, 0, device, image);
 

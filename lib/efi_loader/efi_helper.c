@@ -443,6 +443,41 @@ efi_status_t efi_env_set_load_options(efi_handle_t handle,
 }
 
 /**
+ * efi_dtb_trace() - log identity of a device tree
+ *
+ * Logs the address, size and the root node's compatible and model strings.
+ * Only active when CONFIG_EFI_DTB_TRACE is enabled.
+ *
+ * @tag:	short description of the source or processing stage
+ * @fdt:	device tree or NULL
+ */
+void efi_dtb_trace(const char *tag, const void *fdt)
+{
+	const char *compatible = "(none)";
+	const char *model = "(none)";
+	const void *prop;
+	int len;
+
+	if (!IS_ENABLED(CONFIG_EFI_DTB_TRACE) || !fdt)
+		return;
+
+	if (fdt_check_header(fdt)) {
+		log_info("EFI-DTB: %s: %p (invalid FDT)\n", tag, fdt);
+		return;
+	}
+
+	prop = fdt_getprop(fdt, 0, "compatible", &len);
+	if (prop)
+		compatible = prop;
+	prop = fdt_getprop(fdt, 0, "model", &len);
+	if (prop)
+		model = prop;
+
+	log_info("EFI-DTB: %s: addr=%p size=%#x compatible=\"%s\" model=\"%s\"\n",
+		 tag, fdt, fdt_totalsize(fdt), compatible, model);
+}
+
+/**
  * copy_fdt() - Copy the device tree to a new location available to EFI
  *
  * The FDT is copied to a suitable location within the EFI memory map.

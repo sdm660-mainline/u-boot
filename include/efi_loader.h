@@ -622,6 +622,8 @@ efi_status_t efi_env_set_load_options(efi_handle_t handle, const char *env_var,
 void *efi_get_configuration_table(const efi_guid_t *guid);
 /* Install device tree */
 efi_status_t efi_install_fdt(void *fdt);
+/* Log identity of a device tree (address, size, root compatible/model) */
+void efi_dtb_trace(const char *tag, const void *fdt);
 /* Install initrd */
 efi_status_t efi_install_initrd(void *initrd, size_t initd_sz);
 /* Execute loaded UEFI image */
